@@ -1,18 +1,40 @@
 package com.example.roguecraftplugin;
 
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Action;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
-public class RoguecraftEventHandler implements Listener {
+public class RoguecraftEventListener implements Listener {
     private RoguecraftPlugin plugin;
     private CombatManager combatManager;
 
-    public RoguecraftEventHandler(RoguecraftPlugin plugin, CombatManager combatManager) {
+    public RoguecraftEventListener(RoguecraftPlugin plugin, CombatManager combatManager) {
         this.plugin = plugin;
         this.combatManager = combatManager;
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        RoguecraftPlayerData playerData = plugin.getPlayerData(player);
+
+        // Check if the player is using a skill
+        if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            for (Skill skill : playerData.getLearnedSkills()) {
+                if (!playerData.isOnCooldown(skill) && player.isSneaking()) {
+                    plugin.getSkillManager().useSkill(player, skill);
+                    playerData.startCooldown(skill);
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+        }
     }
 
     @EventHandler
@@ -51,5 +73,19 @@ public class RoguecraftEventHandler implements Listener {
 
     private void activateAbility(Player player, Ability ability) {
         // Implement logic to activate the specified ability and apply its effects
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        RoguecraftPlayerData playerData = plugin.getPlayerData(player);
+        // Initialize player data or load it from storage
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        RoguecraftPlayerData playerData = plugin.getPlayerData(player);
+        // Save player data to storage
     }
 }
