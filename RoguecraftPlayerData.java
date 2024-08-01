@@ -9,6 +9,7 @@ public class RoguecraftPlayerData {
     private RoguecraftClass playerClass;
     private RoguecraftSpecialization specialization;
     private Map<Ability, Integer> abilityLevels;
+    private Map<ItemType, Item> equippedItems;
 
     public RoguecraftPlayerData(Player player) {
         this.player = player;
@@ -18,6 +19,33 @@ public class RoguecraftPlayerData {
         this.specialization = RoguecraftSpecialization.SWORD_AND_SHIELD;
         this.abilityLevels = new HashMap<>();
     }
+
+    public RoguecraftPlayerData(Player player) {
+        // ... existing code ...
+        this.equippedItems = new HashMap<>();
+    }
+
+    public void equipItem(Item item) {
+        equippedItems.put(item.getType(), item);
+        // Update player stats based on the equipped item
+    }
+
+    public Item getEquippedItem(ItemType type) {
+        return equippedItems.get(type);
+    }
+
+    public void learnAbility(Ability ability) {
+        abilityLevels.put(ability, 1);
+    }
+
+    public void upgradeAbility(Ability ability) {
+        int currentLevel = abilityLevels.getOrDefault(ability, 0);
+        if (currentLevel < ability.getMaxLevel()) {
+            abilityLevels.put(ability, currentLevel + 1);
+            // Notify the player of the ability upgrade
+        }
+    }
+}
 
     public int getLevel() {
         return level;
