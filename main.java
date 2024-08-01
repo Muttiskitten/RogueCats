@@ -1,3 +1,4 @@
+public class RoguecraftPlugin extends JavaPlugin {
 public interface RoguecraftPlayerData {
     // Declare the required methods and properties for the RoguecraftPlayerData interface
 }
@@ -63,15 +64,19 @@ public class RoguecraftPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         // Register skills
-        Skill fireball = new SkillImpl("Fireball", "Shoot a fireball at your enemies", 10000, new FireballSkillEffect());
-        skillManager.registerSkill(fireball);
-
+        
         RoguecraftEventListener eventListener = new RoguecraftEventListener(this, combatManager);
         Bukkit.getPluginManager().registerEvents(eventListener, this);
 
         // Load player data from storage or create new data
         for (Player player : Bukkit.getOnlinePlayers()) {
             getPlayerData(player);
+
+            // Register commands
+        registerCommands();
+
+        // Register spigot events
+        registerEvents();
         }
     }
 
@@ -83,6 +88,15 @@ public class RoguecraftPlugin extends JavaPlugin {
         }
     }
 
+    private void registerCommands() {
+        getCommand("roguecraft").setExecutor(new RoguecraftCommand(this));
+    }
+
+    private void registerEvents() {
+        PluginManager pluginManager = getServer().getPluginManager();
+        pluginManager.registerEvents(new RoguecraftEventListener(this, combatManager), this);
+    }
+    
     public RoguecraftPlayerData getPlayerData(Player player) {
         return playerDataFactory.getOrCreatePlayerData(player);
     }
