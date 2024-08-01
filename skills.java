@@ -4,10 +4,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SkillManager {
-    private RoguecraftPlugin plugin;
+    private Map<String, Skill> skills;
 
-    public SkillManager(RoguecraftPlugin plugin) {
-        this.plugin = plugin;
+    public SkillManager() {
+        this.skills = new HashMap<>();
+    }
+
+    public void registerSkill(Skill skill) {
+        skills.put(skill.getName(), skill);
+    }
+
+    public Skill getSkill(String name) {
+        return skills.get(name);
     }
 
     public void learnSkill(Player player, Skill skill) {
@@ -15,28 +23,25 @@ public class SkillManager {
         playerData.learnSkill(skill);
     }
 
-    public void upgradeSkill(Player player, Skill skill) {
+    public void useSkill(Player player, Skill skill) {
         RoguecraftPlayerData playerData = plugin.getPlayerData(player);
-        playerData.upgradeSkill(skill);
-    }
-
-    public Map<Skill, Integer> getPlayerSkills(Player player) {
-        RoguecraftPlayerData playerData = plugin.getPlayerData(player);
-        return playerData.getSkillLevels();
+        if (playerData.hasSkill(skill)) {
+            skill.use(player);
+        }
     }
 }
 
 public class Skill {
     private String name;
     private String description;
-    private Map<Stat, Integer> statRequirements;
-    private Map<Stat, Integer> statBonuses;
+    private int cooldown;
+    private SkillEffect effect;
 
-    public Skill(String name, String description, Map<Stat, Integer> statRequirements, Map<Stat, Integer> statBonuses) {
+    public Skill(String name, String description, int cooldown, SkillEffect effect) {
         this.name = name;
         this.description = description;
-        this.statRequirements = statRequirements;
-        this.statBonuses = statBonuses;
+        this.cooldown = cooldown;
+        this.effect = effect;
     }
 
     public String getName() {
@@ -47,11 +52,15 @@ public class Skill {
         return description;
     }
 
-    public Map<Stat, Integer> getStatRequirements() {
-        return statRequirements;
+    public int getCooldown() {
+        return cooldown;
     }
 
-    public Map<Stat, Integer> getStatBonuses() {
-        return statBonuses;
+    public void use(Player player) {
+        effect.apply(player);
     }
+}
+
+public interface SkillEffect {
+    void apply(Player player);
 }
