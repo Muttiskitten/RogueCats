@@ -1,25 +1,69 @@
-package com.example.roguecraftplugin;
+public interface RoguecraftPlayerData {
+    // Declare the required methods and properties for the RoguecraftPlayerData interface
+}
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
+public class RoguecraftPlayerDataImpl implements RoguecraftPlayerData {
+    // Implement the RoguecraftPlayerData interface
+}
 
-import java.util.HashMap;
-import java.util.Map;
+public interface RoguecraftPlayerDataFactory {
+    RoguecraftPlayerData getOrCreatePlayerData(Player player);
+}
+
+public class RoguecraftPlayerDataFactoryImpl implements RoguecraftPlayerDataFactory {
+    @Override
+    public RoguecraftPlayerData getOrCreatePlayerData(Player player) {
+        // Implement the logic to get or create the RoguecraftPlayerData
+        return new RoguecraftPlayerDataImpl(player);
+    }
+}
+
+public interface Skill {
+    // Declare the required methods and properties for the Skill interface
+}
+
+public class SkillImpl implements Skill {
+    // Implement the Skill interface
+}
+
+public interface SkillManager {
+    void registerSkill(Skill skill);
+    // Declare other required methods for the SkillManager interface
+}
+
+public class SkillManagerImpl implements SkillManager {
+    private Map<String, Skill> registeredSkills = new HashMap<>();
+
+    @Override
+    public void registerSkill(Skill skill) {
+        registeredSkills.put(skill.getName(), skill);
+    }
+    // Implement other required methods for the SkillManager interface
+}
+
+public interface CombatManager {
+    // Declare the required methods and properties for the CombatManager interface
+}
+
+public class CombatManagerImpl implements CombatManager {
+    // Implement the CombatManager interface
+}
 
 public class RoguecraftPlugin extends JavaPlugin {
-    private Map<Player, RoguecraftPlayerData> playerData;
-    private SkillManager skillManager;
-    private CombatManager combatManager;
+    private final RoguecraftPlayerDataFactory playerDataFactory;
+    private final SkillManager skillManager;
+    private final CombatManager combatManager;
+
+    public RoguecraftPlugin(RoguecraftPlayerDataFactory playerDataFactory, SkillManager skillManager, CombatManager combatManager) {
+        this.playerDataFactory = playerDataFactory;
+        this.skillManager = skillManager;
+        this.combatManager = combatManager;
+    }
 
     @Override
     public void onEnable() {
-        playerData = new HashMap<>();
-        skillManager = new SkillManager(this);
-        combatManager = new CombatManager(this);
-
         // Register skills
-        Skill fireball = new Skill("Fireball", "Shoot a fireball at your enemies", 10000, new FireballSkillEffect());
+        Skill fireball = new SkillImpl("Fireball", "Shoot a fireball at your enemies", 10000, new FireballSkillEffect());
         skillManager.registerSkill(fireball);
 
         RoguecraftEventListener eventListener = new RoguecraftEventListener(this, combatManager);
@@ -40,12 +84,7 @@ public class RoguecraftPlugin extends JavaPlugin {
     }
 
     public RoguecraftPlayerData getPlayerData(Player player) {
-        RoguecraftPlayerData data = playerData.get(player);
-        if (data == null) {
-            data = new RoguecraftPlayerData(player);
-            playerData.put(player, data);
-        }
-        return data;
+        return playerDataFactory.getOrCreatePlayerData(player);
     }
 
     private void savePlayerData(Player player, RoguecraftPlayerData data) {
